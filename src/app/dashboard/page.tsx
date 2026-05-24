@@ -686,7 +686,11 @@ const mapDbMealToClient = (m: DbMeal): LoggedMeal => ({
   mealType: m.meal_type,
 });
 
-const mapClientMealToDb = (m: LoggedMeal, userId: string, userEmail: string) => ({
+const mapClientMealToDb = (
+  m: LoggedMeal,
+  userId: string,
+  userEmail: string,
+) => ({
   logged_id: m.loggedId,
   user_id: userId,
   user_email: userEmail,
@@ -907,18 +911,26 @@ export default function Home() {
 
               if (profileErr || !profile) {
                 // Try to get local profile to insert or fallback
-                const storedProfile = localStorage.getItem(`nourishlab_profile_${userKey}`);
-                const parsedLocal = storedProfile ? JSON.parse(storedProfile) : null;
+                const storedProfile = localStorage.getItem(
+                  `nourishlab_profile_${userKey}`,
+                );
+                const parsedLocal = storedProfile
+                  ? JSON.parse(storedProfile)
+                  : null;
                 const newProfile = {
                   id: parsedUser.id,
                   email: parsedUser.email,
-                  name: parsedUser.name || parsedUser.email.split("@")[0] || "User",
+                  name:
+                    parsedUser.name || parsedUser.email.split("@")[0] || "User",
                   weight: parsedLocal?.weight || 65,
                   height: parsedLocal?.height || 165,
                   age: parsedLocal?.age || 34,
                   gender: parsedLocal?.gender || "female",
                   activity: parsedLocal?.activity || 1.2,
-                  condition_id: parsedLocal?.conditionId || parsedUser.conditionId || "general",
+                  condition_id:
+                    parsedLocal?.conditionId ||
+                    parsedUser.conditionId ||
+                    "general",
                   waist: parsedLocal?.waist || 75,
                 };
                 const { data: insertedProfile } = await supabase
@@ -940,7 +952,8 @@ export default function Home() {
                 if (profile.weight) setWeight(Number(profile.weight));
                 if (profile.height) setHeight(Number(profile.height));
                 if (profile.age) setAge(Number(profile.age));
-                if (profile.gender) setGender(profile.gender as "male" | "female");
+                if (profile.gender)
+                  setGender(profile.gender as "male" | "female");
                 if (profile.activity) setActivity(Number(profile.activity));
                 if (profile.condition_id) setConditionId(profile.condition_id);
                 if (profile.waist) setWaist(Number(profile.waist));
@@ -955,7 +968,9 @@ export default function Home() {
                 .lte("created_at", `${todayStr}T23:59:59.999Z`);
 
               if (mealsErr || !dbMeals || dbMeals.length === 0) {
-                const storedMeals = localStorage.getItem(`nourishlab_meals_${userKey}`);
+                const storedMeals = localStorage.getItem(
+                  `nourishlab_meals_${userKey}`,
+                );
                 if (storedMeals) {
                   setLoggedMeals(JSON.parse(storedMeals));
                 } else {
@@ -1006,7 +1021,9 @@ export default function Home() {
                 .order("date", { ascending: true });
 
               if (weightErr || !dbWeight || dbWeight.length === 0) {
-                const storedWeightHistory = localStorage.getItem(`nourishlab_weight_history_${userKey}`);
+                const storedWeightHistory = localStorage.getItem(
+                  `nourishlab_weight_history_${userKey}`,
+                );
                 if (storedWeightHistory) {
                   setWeightHistory(JSON.parse(storedWeightHistory));
                 } else {
@@ -1024,7 +1041,12 @@ export default function Home() {
                   );
                 }
               } else {
-                setWeightHistory(dbWeight.map(row => ({ date: row.date, weight: Number(row.weight) })));
+                setWeightHistory(
+                  dbWeight.map((row) => ({
+                    date: row.date,
+                    weight: Number(row.weight),
+                  })),
+                );
               }
 
               // 4. Fluid intake Load (Today's)
@@ -1035,7 +1057,9 @@ export default function Home() {
                 .eq("date", todayStr);
 
               if (fluidsErr || !dbFluids || dbFluids.length === 0) {
-                const storedFluid = localStorage.getItem(`nourishlab_fluid_${userKey}`);
+                const storedFluid = localStorage.getItem(
+                  `nourishlab_fluid_${userKey}`,
+                );
                 if (storedFluid) {
                   setFluidIntake(Number(storedFluid));
                 }
@@ -1052,16 +1076,18 @@ export default function Home() {
                 .eq("user_id", parsedUser.id);
 
               if (checklistErr || !dbChecklists || dbChecklists.length === 0) {
-                const storedChecklist = localStorage.getItem(`nourishlab_checklist_${userKey}`);
+                const storedChecklist = localStorage.getItem(
+                  `nourishlab_checklist_${userKey}`,
+                );
                 if (storedChecklist) {
                   setChecklist(JSON.parse(storedChecklist));
                 }
               } else {
                 const fetchedChecklist: Record<string, boolean> = {};
-                dbChecklists.forEach(row => {
+                dbChecklists.forEach((row) => {
                   const dateStr = row.date;
                   const items = row.items || {};
-                  Object.keys(items).forEach(itemId => {
+                  Object.keys(items).forEach((itemId) => {
                     fetchedChecklist[`${dateStr}_${itemId}`] = !!items[itemId];
                   });
                 });
@@ -1076,24 +1102,41 @@ export default function Home() {
                 .maybeSingle();
 
               if (labErr || !dbLab) {
-                const storedLab = localStorage.getItem(`nourishlab_lab_data_${userKey}`);
+                const storedLab = localStorage.getItem(
+                  `nourishlab_lab_data_${userKey}`,
+                );
                 if (storedLab) {
                   setLabData(JSON.parse(storedLab));
                 }
               } else {
                 setLabData({
-                  uricAcid: dbLab.uric_acid !== null ? Number(dbLab.uric_acid) : undefined,
+                  uricAcid:
+                    dbLab.uric_acid !== null
+                      ? Number(dbLab.uric_acid)
+                      : undefined,
                   ureum: dbLab.ureum !== null ? Number(dbLab.ureum) : undefined,
-                  creatinine: dbLab.creatinine !== null ? Number(dbLab.creatinine) : undefined,
-                  potassium: dbLab.potassium !== null ? Number(dbLab.potassium) : undefined,
-                  sodium: dbLab.sodium !== null ? Number(dbLab.sodium) : undefined,
-                  phosphorus: dbLab.phosphorus !== null ? Number(dbLab.phosphorus) : undefined,
+                  creatinine:
+                    dbLab.creatinine !== null
+                      ? Number(dbLab.creatinine)
+                      : undefined,
+                  potassium:
+                    dbLab.potassium !== null
+                      ? Number(dbLab.potassium)
+                      : undefined,
+                  sodium:
+                    dbLab.sodium !== null ? Number(dbLab.sodium) : undefined,
+                  phosphorus:
+                    dbLab.phosphorus !== null
+                      ? Number(dbLab.phosphorus)
+                      : undefined,
                   lastUpdated: dbLab.last_updated || undefined,
                 });
               }
-
             } catch (err) {
-              console.error("Supabase load error, falling back to localStorage:", err);
+              console.error(
+                "Supabase load error, falling back to localStorage:",
+                err,
+              );
               loadLocalFallback(userKey, todayStr);
             }
           } else {
@@ -1107,7 +1150,9 @@ export default function Home() {
 
       const loadLocalFallback = (userKey: string, todayStr: string) => {
         // 1. Profile Load
-        const storedProfile = localStorage.getItem(`nourishlab_profile_${userKey}`);
+        const storedProfile = localStorage.getItem(
+          `nourishlab_profile_${userKey}`,
+        );
         if (storedProfile) {
           const parsed = JSON.parse(storedProfile);
           if (parsed.weight) setWeight(Number(parsed.weight));
@@ -1160,7 +1205,9 @@ export default function Home() {
         }
 
         // 3. Weight Log History Load
-        const storedWeightHistory = localStorage.getItem(`nourishlab_weight_history_${userKey}`);
+        const storedWeightHistory = localStorage.getItem(
+          `nourishlab_weight_history_${userKey}`,
+        );
         if (storedWeightHistory) {
           setWeightHistory(JSON.parse(storedWeightHistory));
         } else {
@@ -1185,13 +1232,17 @@ export default function Home() {
         }
 
         // 5. Checklist Load
-        const storedChecklist = localStorage.getItem(`nourishlab_checklist_${userKey}`);
+        const storedChecklist = localStorage.getItem(
+          `nourishlab_checklist_${userKey}`,
+        );
         if (storedChecklist) {
           setChecklist(JSON.parse(storedChecklist));
         }
 
         // 6. Lab Data Load
-        const storedLab = localStorage.getItem(`nourishlab_lab_data_${userKey}`);
+        const storedLab = localStorage.getItem(
+          `nourishlab_lab_data_${userKey}`,
+        );
         if (storedLab) {
           setLabData(JSON.parse(storedLab));
         }
@@ -1283,26 +1334,31 @@ export default function Home() {
 
   // --- Auto-Save to Supabase with debouncing when states change ---
   useEffect(() => {
-    if (!mounted || !currentUser || !currentUser.id || !isSupabaseSupported() || !supabase) return;
+    if (
+      !mounted ||
+      !currentUser ||
+      !currentUser.id ||
+      !isSupabaseSupported() ||
+      !supabase
+    )
+      return;
     const client = supabase;
 
     const timer = setTimeout(async () => {
       try {
-        const { error } = await client
-          .from("profiles")
-          .upsert({
-            id: currentUser.id,
-            email: currentUser.email,
-            name: currentUser.name,
-            weight: weight || null,
-            height: height || null,
-            age: age || null,
-            gender: gender || null,
-            activity: activity || null,
-            condition_id: conditionId || null,
-            waist: waist || null,
-            updated_at: new Date().toISOString(),
-          });
+        const { error } = await client.from("profiles").upsert({
+          id: currentUser.id,
+          email: currentUser.email,
+          name: currentUser.name,
+          weight: weight || null,
+          height: height || null,
+          age: age || null,
+          gender: gender || null,
+          activity: activity || null,
+          condition_id: conditionId || null,
+          waist: waist || null,
+          updated_at: new Date().toISOString(),
+        });
         if (error) console.error("Error syncing profile to Supabase:", error);
       } catch (err) {
         console.error("Supabase profile sync error:", err);
@@ -1310,28 +1366,73 @@ export default function Home() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [weight, height, age, gender, activity, conditionId, waist, currentUser, mounted]);
+  }, [
+    weight,
+    height,
+    age,
+    gender,
+    activity,
+    conditionId,
+    waist,
+    currentUser,
+    mounted,
+  ]);
 
   useEffect(() => {
-    if (!mounted || !currentUser || !currentUser.id || !isSupabaseSupported() || !supabase) return;
+    if (
+      !mounted ||
+      !currentUser ||
+      !currentUser.id ||
+      !isSupabaseSupported() ||
+      !supabase
+    )
+      return;
     const client = supabase;
 
     const timer = setTimeout(async () => {
       try {
-        const { error } = await client
-          .from("labs")
-          .upsert({
-            user_id: currentUser.id,
-            user_email: currentUser.email,
-            uric_acid: labData.uricAcid !== undefined && labData.uricAcid !== null && !isNaN(Number(labData.uricAcid)) ? Number(labData.uricAcid) : null,
-            ureum: labData.ureum !== undefined && labData.ureum !== null && !isNaN(Number(labData.ureum)) ? Number(labData.ureum) : null,
-            creatinine: labData.creatinine !== undefined && labData.creatinine !== null && !isNaN(Number(labData.creatinine)) ? Number(labData.creatinine) : null,
-            potassium: labData.potassium !== undefined && labData.potassium !== null && !isNaN(Number(labData.potassium)) ? Number(labData.potassium) : null,
-            sodium: labData.sodium !== undefined && labData.sodium !== null && !isNaN(Number(labData.sodium)) ? Number(labData.sodium) : null,
-            phosphorus: labData.phosphorus !== undefined && labData.phosphorus !== null && !isNaN(Number(labData.phosphorus)) ? Number(labData.phosphorus) : null,
-            last_updated: labData.lastUpdated || null,
-            updated_at: new Date().toISOString(),
-          });
+        const { error } = await client.from("labs").upsert({
+          user_id: currentUser.id,
+          user_email: currentUser.email,
+          uric_acid:
+            labData.uricAcid !== undefined &&
+            labData.uricAcid !== null &&
+            !isNaN(Number(labData.uricAcid))
+              ? Number(labData.uricAcid)
+              : null,
+          ureum:
+            labData.ureum !== undefined &&
+            labData.ureum !== null &&
+            !isNaN(Number(labData.ureum))
+              ? Number(labData.ureum)
+              : null,
+          creatinine:
+            labData.creatinine !== undefined &&
+            labData.creatinine !== null &&
+            !isNaN(Number(labData.creatinine))
+              ? Number(labData.creatinine)
+              : null,
+          potassium:
+            labData.potassium !== undefined &&
+            labData.potassium !== null &&
+            !isNaN(Number(labData.potassium))
+              ? Number(labData.potassium)
+              : null,
+          sodium:
+            labData.sodium !== undefined &&
+            labData.sodium !== null &&
+            !isNaN(Number(labData.sodium))
+              ? Number(labData.sodium)
+              : null,
+          phosphorus:
+            labData.phosphorus !== undefined &&
+            labData.phosphorus !== null &&
+            !isNaN(Number(labData.phosphorus))
+              ? Number(labData.phosphorus)
+              : null,
+          last_updated: labData.lastUpdated || null,
+          updated_at: new Date().toISOString(),
+        });
         if (error) console.error("Error syncing labs to Supabase:", error);
       } catch (err) {
         console.error("Supabase labs sync error:", err);
@@ -1342,7 +1443,14 @@ export default function Home() {
   }, [labData, currentUser, mounted]);
 
   useEffect(() => {
-    if (!mounted || !currentUser || !currentUser.id || !isSupabaseSupported() || !supabase) return;
+    if (
+      !mounted ||
+      !currentUser ||
+      !currentUser.id ||
+      !isSupabaseSupported() ||
+      !supabase
+    )
+      return;
     const client = supabase;
 
     const timer = setTimeout(async () => {
@@ -1357,16 +1465,17 @@ export default function Home() {
           }
         });
 
-        const { error } = await client
-          .from("checklists")
-          .upsert({
+        const { error } = await client.from("checklists").upsert(
+          {
             user_id: currentUser.id,
             user_email: currentUser.email,
             date: todayStr,
             items: todayItems,
-          }, {
-            onConflict: "user_id,date"
-          });
+          },
+          {
+            onConflict: "user_id,date",
+          },
+        );
         if (error) console.error("Error syncing checklist to Supabase:", error);
       } catch (err) {
         console.error("Supabase checklist sync error:", err);
@@ -1377,7 +1486,14 @@ export default function Home() {
   }, [checklist, currentUser, mounted]);
 
   useEffect(() => {
-    if (!mounted || !currentUser || !currentUser.id || !isSupabaseSupported() || !supabase) return;
+    if (
+      !mounted ||
+      !currentUser ||
+      !currentUser.id ||
+      !isSupabaseSupported() ||
+      !supabase
+    )
+      return;
     const client = supabase;
 
     const timer = setTimeout(async () => {
@@ -1404,7 +1520,8 @@ export default function Home() {
               .from("fluids")
               .update({ amount: fluidIntake })
               .eq("id", existing.id);
-            if (error) console.error("Error updating fluid after verification:", error);
+            if (error)
+              console.error("Error updating fluid after verification:", error);
           } else {
             const { data, error } = await client
               .from("fluids")
@@ -1435,33 +1552,38 @@ export default function Home() {
   useEffect(() => {
     if (!mounted) return;
 
-    const delayDebounceFn = setTimeout(async () => {
-      if (!searchQuery.trim()) {
-        setApiSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
+    const delayDebounceFn = setTimeout(
+      async () => {
+        if (!searchQuery.trim()) {
+          setApiSearchResults([]);
+          setIsSearching(false);
+          return;
+        }
 
-      setIsSearching(true);
-      try {
-        const response = await fetch(`/api/foods/search?q=${encodeURIComponent(searchQuery)}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && Array.isArray(data.results)) {
-            setApiSearchResults(data.results);
+        setIsSearching(true);
+        try {
+          const response = await fetch(
+            `/api/foods/search?q=${encodeURIComponent(searchQuery)}`,
+          );
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && Array.isArray(data.results)) {
+              setApiSearchResults(data.results);
+            } else {
+              setApiSearchResults([]);
+            }
           } else {
             setApiSearchResults([]);
           }
-        } else {
+        } catch (err) {
+          console.error("FatSecret API search error:", err);
           setApiSearchResults([]);
+        } finally {
+          setIsSearching(false);
         }
-      } catch (err) {
-        console.error("FatSecret API search error:", err);
-        setApiSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    }, searchQuery.trim() ? 500 : 0);
+      },
+      searchQuery.trim() ? 500 : 0,
+    );
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, mounted]);
@@ -1819,7 +1941,9 @@ export default function Home() {
       setSelectedPortionWeight(food.servingWeightGrams || 100);
 
       try {
-        const response = await fetch(`/api/foods/get?id=${encodeURIComponent(food.id)}`);
+        const response = await fetch(
+          `/api/foods/get?id=${encodeURIComponent(food.id)}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.food) {
@@ -1863,7 +1987,8 @@ export default function Home() {
 
     // Supabase sync
     if (isSupabaseSupported() && supabase && currentUser?.id) {
-      supabase.from("meals")
+      supabase
+        .from("meals")
         .insert(mapClientMealToDb(newMeal, currentUser.id, currentUser.email))
         .then(({ error }) => {
           if (error) console.error("Error inserting meal to Supabase:", error);
@@ -1900,10 +2025,12 @@ export default function Home() {
 
     // Supabase sync
     if (isSupabaseSupported() && supabase && currentUser?.id) {
-      supabase.from("meals")
+      supabase
+        .from("meals")
         .insert(mapClientMealToDb(newMeal, currentUser.id, currentUser.email))
         .then(({ error }) => {
-          if (error) console.error("Error inserting manual meal to Supabase:", error);
+          if (error)
+            console.error("Error inserting manual meal to Supabase:", error);
         });
     }
 
@@ -1924,7 +2051,8 @@ export default function Home() {
 
     // Supabase sync
     if (isSupabaseSupported() && supabase && currentUser?.id) {
-      supabase.from("meals")
+      supabase
+        .from("meals")
         .delete()
         .eq("logged_id", loggedId)
         .eq("user_id", currentUser.id)
@@ -1959,7 +2087,8 @@ export default function Home() {
     // Supabase sync
     if (isSupabaseSupported() && supabase && currentUser?.id) {
       const client = supabase;
-      client.from("weight_history")
+      client
+        .from("weight_history")
         .select("id")
         .eq("user_id", currentUser.id)
         .eq("date", newWeightDate)
@@ -1970,14 +2099,17 @@ export default function Home() {
             return;
           }
           if (existing) {
-            client.from("weight_history")
+            client
+              .from("weight_history")
               .update({ weight: wtVal })
               .eq("id", existing.id)
               .then(({ error }) => {
-                if (error) console.error("Error updating weight history:", error);
+                if (error)
+                  console.error("Error updating weight history:", error);
               });
           } else {
-            client.from("weight_history")
+            client
+              .from("weight_history")
               .insert({
                 user_id: currentUser.id,
                 user_email: currentUser.email,
@@ -1985,7 +2117,8 @@ export default function Home() {
                 weight: wtVal,
               })
               .then(({ error }) => {
-                if (error) console.error("Error inserting weight history:", error);
+                if (error)
+                  console.error("Error inserting weight history:", error);
               });
           }
         });
@@ -2002,12 +2135,14 @@ export default function Home() {
 
     // Supabase sync
     if (isSupabaseSupported() && supabase && currentUser?.id) {
-      supabase.from("weight_history")
+      supabase
+        .from("weight_history")
         .delete()
         .eq("user_id", currentUser.id)
         .eq("date", dateToDelete)
         .then(({ error }) => {
-          if (error) console.error("Error deleting weight log from Supabase:", error);
+          if (error)
+            console.error("Error deleting weight log from Supabase:", error);
         });
     }
 
@@ -2166,7 +2301,11 @@ export default function Home() {
         <div>
           <div className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="NourishLab Logo" className="h-9 md:h-12 w-auto object-contain" />
+            <img
+              src="/logo.png"
+              alt="NourishLab Logo"
+              className="h-9 md:h-12 w-auto object-contain"
+            />
           </div>
           <p className="text-xs font-mono uppercase tracking-wider text-[#6f7871] mt-2.5 print:hidden">
             Clinical Nutrition Ledger // Pasien: {currentUser.name} (
@@ -2989,7 +3128,13 @@ export default function Home() {
                     <select
                       value={selectedMealType}
                       onChange={(e) =>
-                        setSelectedMealType(e.target.value as "Breakfast" | "Lunch" | "Dinner" | "Snack")
+                        setSelectedMealType(
+                          e.target.value as
+                            | "Breakfast"
+                            | "Lunch"
+                            | "Dinner"
+                            | "Snack",
+                        )
                       }
                       className="text-xs border border-[#cbd3cc] rounded bg-white px-2 py-1 outline-none text-[#24402a] font-medium"
                     >
@@ -3125,7 +3270,9 @@ export default function Home() {
                         {isFetchingDetails ? (
                           <div className="flex items-center justify-center gap-2 w-full py-2">
                             <RefreshCw className="h-4 w-4 animate-spin text-[#587e61]" />
-                            <span className="text-xs text-[#6f7871]">Mengambil detail nutrisi...</span>
+                            <span className="text-xs text-[#6f7871]">
+                              Mengambil detail nutrisi...
+                            </span>
                           </div>
                         ) : (
                           <>
@@ -3648,7 +3795,7 @@ export default function Home() {
 
                 {/* NEW: Biochemical Laboratory Ledger */}
                 <div className="border-t border-[#f1efe9] pt-6">
-                  <label className="text-xs font-bold uppercase tracking-widest text-[#24402a] block mb-2 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-[#24402a] flex mb-2 items-center gap-2">
                     <FlaskConical className="h-4 w-4 text-[#587e61]" /> Buku
                     Rekam Laboratorium (Data Biokimia)
                   </label>
@@ -4045,8 +4192,8 @@ export default function Home() {
 
       {/* Subtle bottom ticker */}
       <footer className="border-t border-[#e2e8e3] py-4 px-6 bg-[#fbfaf7] text-center text-[10px] text-[#6f7871] font-mono print:hidden">
-        NourishLab v1.0 — Tailored Nutrition Tracker for Clinical Support.
-        All rights reserved.
+        NourishLab v1.0 — Tailored Nutrition Tracker for Clinical Support. All
+        rights reserved.
       </footer>
     </div>
   );
