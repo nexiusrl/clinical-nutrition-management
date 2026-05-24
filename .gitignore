@@ -40,6 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# ai
+# markdown
 AGENTS.md
 CLAUDE.md
+PRD.md
