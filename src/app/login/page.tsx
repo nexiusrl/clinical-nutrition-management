@@ -87,7 +87,9 @@ export default function AuthPage() {
     const checkSession = async () => {
       try {
         if (isSupabaseSupported() && supabase) {
-          const { data: { session } } = await supabase.auth.getSession();
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
           if (session) {
             const user = session.user;
             // Fetch profile
@@ -105,7 +107,7 @@ export default function AuthPage() {
                   email: user.email,
                   name: profile.name,
                   conditionId: profile.condition_id,
-                })
+                }),
               );
             } else {
               localStorage.setItem(
@@ -113,9 +115,12 @@ export default function AuthPage() {
                 JSON.stringify({
                   id: user.id,
                   email: user.email,
-                  name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+                  name:
+                    user.user_metadata?.name ||
+                    user.email?.split("@")[0] ||
+                    "User",
                   conditionId: "general",
-                })
+                }),
               );
             }
             window.location.href = "/dashboard";
@@ -207,7 +212,10 @@ export default function AuthPage() {
         });
 
         if (error) {
-          console.warn("Supabase Auth failed, checking local credentials:", error.message);
+          console.warn(
+            "Supabase Auth failed, checking local credentials:",
+            error.message,
+          );
           const localSuccess = tryLocalLogin();
           if (!localSuccess) {
             setErrorMsg(error.message || "Email atau kata sandi tidak sesuai.");
@@ -228,11 +236,12 @@ export default function AuthPage() {
             const defaultProfile = {
               id: user.id,
               email: user.email!,
-              name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+              name:
+                user.user_metadata?.name || user.email?.split("@")[0] || "User",
               condition_id: "general",
             };
             await supabase.from("profiles").upsert(defaultProfile);
-            
+
             localStorage.setItem(
               "nourishlab_current_user",
               JSON.stringify({
@@ -240,7 +249,7 @@ export default function AuthPage() {
                 email: user.email,
                 name: defaultProfile.name,
                 conditionId: defaultProfile.condition_id,
-              })
+              }),
             );
           } else {
             localStorage.setItem(
@@ -248,9 +257,12 @@ export default function AuthPage() {
               JSON.stringify({
                 id: user.id,
                 email: user.email,
-                name: profile.name || user.user_metadata?.name || user.email?.split("@")[0],
+                name:
+                  profile.name ||
+                  user.user_metadata?.name ||
+                  user.email?.split("@")[0],
                 conditionId: profile.condition_id || "general",
-              })
+              }),
             );
           }
 
@@ -315,7 +327,10 @@ export default function AuthPage() {
             .upsert(newProfile);
 
           if (profileError) {
-            console.error("Error creating Supabase profile:", profileError.message);
+            console.error(
+              "Error creating Supabase profile:",
+              profileError.message,
+            );
           }
 
           const sessionUser = {
@@ -338,7 +353,10 @@ export default function AuthPage() {
         }
       } catch (err) {
         console.error("Supabase registration error:", err);
-        const errMsg = err instanceof Error ? err.message : "Terjadi kegagalan mendaftar ke server.";
+        const errMsg =
+          err instanceof Error
+            ? err.message
+            : "Terjadi kegagalan mendaftar ke server.";
         setErrorMsg(errMsg);
         return;
       }
@@ -395,7 +413,6 @@ export default function AuthPage() {
     );
   }
 
-
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#fbfaf7] text-[#18221b]">
       {/* Header Bar */}
@@ -440,13 +457,17 @@ export default function AuthPage() {
               <p className="text-[#6f7871] leading-relaxed">
                 {hasSupabase ? (
                   <>
-                    Aplikasi ini berjalan dalam mode <strong>Sync Awan Hibrida</strong>. Seluruh kredensial
-                    medis dan jurnal asupan Anda disinkronkan ke Supabase Cloud dan dicadangkan secara lokal di browser Anda.
+                    Aplikasi ini berjalan dalam mode{" "}
+                    <strong>Sync Awan Hibrida</strong>. Seluruh kredensial medis
+                    dan jurnal asupan Anda disinkronkan ke Supabase Cloud dan
+                    dicadangkan secara lokal di browser Anda.
                   </>
                 ) : (
                   <>
-                    Aplikasi ini berjalan dalam mode <strong>Secure Offline Sandbox</strong>. Seluruh kredensial
-                    medis dan jurnal asupan Anda disimpan terenkripsi di penyimpanan lokal browser Anda.
+                    Aplikasi ini berjalan dalam mode{" "}
+                    <strong>Secure Offline Sandbox</strong>. Seluruh kredensial
+                    medis dan jurnal asupan Anda disimpan terenkripsi di
+                    penyimpanan lokal browser Anda.
                   </>
                 )}
               </p>
@@ -467,8 +488,10 @@ export default function AuthPage() {
                   )}
                 </div>
                 <div className="flex justify-between border-b border-[#f1efe9] pb-1.5">
-                  <span className="text-[#6f7871]">{hasSupabase ? "TOKEN DATABASE" : "KUNCI LOKAL ENKRIPSI"}</span>
-                  <span className="text-zinc-600 font-bold truncate max-w-[150px]">
+                  <span className="text-[#6f7871]">
+                    {hasSupabase ? "TOKEN DATABASE" : "KUNCI LOKAL ENKRIPSI"}
+                  </span>
+                  <span className="text-zinc-600 font-bold truncate max-w-37.5">
                     {hasSupabase ? "SUPABASE_ACTIVE" : sandboxHash}
                   </span>
                 </div>
@@ -491,10 +514,14 @@ export default function AuthPage() {
           <div className="border-t border-[#cbd3cc]/60 pt-4 space-y-2 text-[10px] font-mono text-[#6f7871]">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-700" />
-              <span>{hasSupabase ? "Koneksi Cloud Aman (RLS Enabled)" : "Nol Transmisi Server (No cloud leak risks)"}</span>
+              <span>
+                {hasSupabase
+                  ? "Koneksi Cloud Aman (RLS Enabled)"
+                  : "Nol Transmisi Server (No cloud leak risks)"}
+              </span>
             </div>
             <p className="leading-normal">
-              {hasSupabase 
+              {hasSupabase
                 ? "Keamanan data klinis dijamin oleh enkripsi transit SSL dan kebijakan Row-Level Security Supabase."
                 : "Keamanan data klinis dijamin oleh isolasi browser sandbox klien Anda sendiri."}
             </p>
@@ -719,14 +746,16 @@ export default function AuthPage() {
             <p>
               {hasSupabase ? (
                 <>
-                  Dengan mendaftar, data kesehatan Anda akan disinkronkan secara real-time dengan Supabase database yang dilindungi kebijakan akses pengguna tersendiri.
+                  Dengan mendaftar, data kesehatan Anda akan disinkronkan secara
+                  real-time dengan Supabase database yang dilindungi kebijakan
+                  akses pengguna tersendiri.
                 </>
               ) : (
                 <>
-                  Dengan mendaftar, semua data kesehatan Anda akan disimpan strictly
-                  di dalam sandbox local storage browser Anda. Data tidak pernah
-                  dikirimkan ke cloud atau server pihak ketiga mana pun demi menjaga
-                  privasi medis.
+                  Dengan mendaftar, semua data kesehatan Anda akan disimpan
+                  strictly di dalam sandbox local storage browser Anda. Data
+                  tidak pernah dikirimkan ke cloud atau server pihak ketiga mana
+                  pun demi menjaga privasi medis.
                 </>
               )}
             </p>
